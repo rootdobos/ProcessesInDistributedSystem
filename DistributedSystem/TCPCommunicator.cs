@@ -49,7 +49,7 @@ namespace DistributedSystem
 
             listeningSocket.Bind(ip);
             listeningSocket.Listen(100);
-            Console.WriteLine("{0} Listening to a new messages ... ", _Index);
+            Console.WriteLine("{0} Listening to new messages ... ", _Index);
             while (true)
             {
 

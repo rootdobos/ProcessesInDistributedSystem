@@ -223,7 +223,7 @@ namespace DistributedSystem
 
             MessageEventArgs eventArgs = new MessageEventArgs();
             eventArgs.Message = message;
-            Console.WriteLine("App Received Rank: "+OwnerProcessId.Rank +" Propose Value: " + message.UcPropose.Value.V);
+            Console.WriteLine("App Received Rank: "+OwnerProcessId.Rank +" Propose Value: " + message.UcPropose.Value.V+" in topic: "+ topicName);
             string pipelineID = "app.uc[" + topicName + "].ec.pl";
 
 
@@ -394,7 +394,7 @@ namespace DistributedSystem
             //string register = m.AppWrite.Register;
             int value = m.UcDecide.Value.V;
 
-            //Console.WriteLine("{0} Starts writing value {1} in register {2}", Index, value, register);
+            Console.WriteLine("{0} Decided: {1}", Index, value);
             Message messageTOhub = new Message();
             messageTOhub.SystemId = systemID;
             messageTOhub.Type = Message.Types.Type.PlSend;
