@@ -1,0 +1,14 @@
+
+.vs/RegisterProject/v15/Server/sqlite3/db.lock
+.vs/RegisterProject/v15/.suo
+.vs/RegisterProject/v15/Server/sqlite3/storage.ide
+.vs/RegisterProject/v15/Server/sqlite3/storage.ide-shm
+.vs/RegisterProject/v15/Server/sqlite3/storage.ide-wal
+DistributedSystem/bin/*
+DistributedSystem/obj/*
+MultiLayerCommunication/bin/*
+MultiLayerCommunication/obj/*
+Application/bin/*
+Application/obj/*
+packages/*
+.vs/*
