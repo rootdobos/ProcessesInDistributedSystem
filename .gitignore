@@ -8,7 +8,9 @@ DistributedSystem/bin/*
 DistributedSystem/obj/*
 MultiLayerCommunication/bin/*
 MultiLayerCommunication/obj/*
-Application/bin/*
-Application/obj/*
+ApplicationWithHub/bin/*
+ApplicationWithHub/obj/*
+ApplicationWithSingleNode/bin/*
+ApplicationWithSingleNode/obj/*
 packages/*
 .vs/*

@@ -30,8 +30,9 @@ namespace DistributedSystem
             }
         }
 
-        public Process(string HubIp, int hubPort,string MyIp,  string owner,int listeningport, int index)
+        public Process(string HubIp, int hubPort,string MyIp,  string owner,int listeningport, int index, bool existsHub=true)
         {
+            _ExistsHub = existsHub;
              ListeningPort = listeningport;
              Index = index;
              Owner = owner;
@@ -86,29 +87,32 @@ namespace DistributedSystem
         }
         public void Run()
         {
-            Message message = new Message();
+            if (_ExistsHub)
+            {
+                Message message = new Message();
 
-            message.Type = Message.Types.Type.PlSend;
+                message.Type = Message.Types.Type.PlSend;
 
-            message.PlSend = new PlSend();
-            message.PlSend.Destination = new ProcessId();
-            message.PlSend.Destination.Host = HubIP;
-            message.PlSend.Destination.Port = HubPort;
-            message.FromAbstractionId = MyID;
+                message.PlSend = new PlSend();
+                message.PlSend.Destination = new ProcessId();
+                message.PlSend.Destination.Host = HubIP;
+                message.PlSend.Destination.Port = HubPort;
+                message.FromAbstractionId = MyID;
 
-            Message registrationMessage = MessageComposer.ProcessRegistrationMessage(ListeningPort, Owner, Index);
-            message.PlSend.Message = registrationMessage;
-            MessageEventArgs eventArgs = new MessageEventArgs();
-            eventArgs.Message = message;
-            CommunicationSystem basesystem = _Systems["base"];
-            basesystem.Send("app.pl", eventArgs);
+                Message registrationMessage = MessageComposer.ProcessRegistrationMessage(ListeningPort, Owner, Index);
+                message.PlSend.Message = registrationMessage;
+                MessageEventArgs eventArgs = new MessageEventArgs();
+                eventArgs.Message = message;
+                CommunicationSystem basesystem = _Systems["base"];
+                basesystem.Send("app.pl", eventArgs);
+            }
             while (true)
             {
                 Thread.Sleep(10);
             }
         }
 
-        private  void ProcessMessage(Message message , bool fromMe=false)
+        public void ProcessMessage(Message message , bool fromMe=false)
         {
             if (Utilities.IsMyMessage(message.ToAbstractionId, MyID) || fromMe == true)
                 {
@@ -257,26 +261,29 @@ namespace DistributedSystem
 
             int receivedValue = m.AppValue.Value.V;
             Console.WriteLine("{0} Received value:{1}", Index, receivedValue);
-            Message reply = new Message();
-            reply.SystemId = systemID;
-            reply.Type = Message.Types.Type.PlSend;
-            reply.PlSend = new PlSend();
-            reply.PlSend.Destination = new ProcessId();
-            reply.PlSend.Destination.Host = HubIP;
-            reply.PlSend.Destination.Port = HubPort;
-            reply.FromAbstractionId = MyID;
+            if (_ExistsHub)
+            {
+                Message reply = new Message();
+                reply.SystemId = systemID;
+                reply.Type = Message.Types.Type.PlSend;
+                reply.PlSend = new PlSend();
+                reply.PlSend.Destination = new ProcessId();
+                reply.PlSend.Destination.Host = HubIP;
+                reply.PlSend.Destination.Port = HubPort;
+                reply.FromAbstractionId = MyID;
 
 
-            Message appValue = MessageComposer.AppValue(receivedValue, MyID, "hub");
+                Message appValue = MessageComposer.AppValue(receivedValue, MyID, "hub");
 
 
-            reply.PlSend.Message = appValue;
+                reply.PlSend.Message = appValue;
 
-            MessageEventArgs eventArgs = new MessageEventArgs();
-            eventArgs.Message = reply;
+                MessageEventArgs eventArgs = new MessageEventArgs();
+                eventArgs.Message = reply;
 
-            CommunicationSystem system = _Systems[systemID];
-            system.Send("app.pl", eventArgs);
+                CommunicationSystem system = _Systems[systemID];
+                system.Send("app.pl", eventArgs);
+            }
 
         }
         private void ProcessNNARWriteReturn(Message m)
@@ -285,31 +292,34 @@ namespace DistributedSystem
 
             string register = Utilities.GetRegisterName(m.FromAbstractionId);
             Console.WriteLine("{0} Register {1} write finished", Index, register);
-            Message messageTOhub = new Message();
-            messageTOhub.SystemId = systemID;
-            messageTOhub.Type = Message.Types.Type.PlSend;
-            messageTOhub.PlSend = new PlSend();
-            messageTOhub.PlSend.Destination = new ProcessId();
-            messageTOhub.PlSend.Destination.Host = HubIP;
-            messageTOhub.PlSend.Destination.Port = HubPort;
-            messageTOhub.FromAbstractionId = MyID;
+            if (_ExistsHub)
+            {
+                Message messageTOhub = new Message();
+                messageTOhub.SystemId = systemID;
+                messageTOhub.Type = Message.Types.Type.PlSend;
+                messageTOhub.PlSend = new PlSend();
+                messageTOhub.PlSend.Destination = new ProcessId();
+                messageTOhub.PlSend.Destination.Host = HubIP;
+                messageTOhub.PlSend.Destination.Port = HubPort;
+                messageTOhub.FromAbstractionId = MyID;
 
 
-            Message appWriteReturn = new Message();
-            appWriteReturn.FromAbstractionId = MyID;
-            appWriteReturn.ToAbstractionId = "hub";
-            appWriteReturn.Type = Message.Types.Type.AppWriteReturn;
-            appWriteReturn.AppWriteReturn = new AppWriteReturn();
-            appWriteReturn.AppWriteReturn.Register = register;
+                Message appWriteReturn = new Message();
+                appWriteReturn.FromAbstractionId = MyID;
+                appWriteReturn.ToAbstractionId = "hub";
+                appWriteReturn.Type = Message.Types.Type.AppWriteReturn;
+                appWriteReturn.AppWriteReturn = new AppWriteReturn();
+                appWriteReturn.AppWriteReturn.Register = register;
 
 
-            messageTOhub.PlSend.Message = appWriteReturn;
+                messageTOhub.PlSend.Message = appWriteReturn;
 
-            MessageEventArgs eventArgs = new MessageEventArgs();
-            eventArgs.Message = messageTOhub;
+                MessageEventArgs eventArgs = new MessageEventArgs();
+                eventArgs.Message = messageTOhub;
 
-            CommunicationSystem system = _Systems[systemID];
-            system.Send("app.pl", eventArgs);
+                CommunicationSystem system = _Systems[systemID];
+                system.Send("app.pl", eventArgs);
+            }
         }
         private void ProcessNNARReadReturn(Message m)
         {
@@ -318,34 +328,37 @@ namespace DistributedSystem
             int readValue= m.NnarReadReturn.Value.V;
             string register = Utilities.GetRegisterName(m.FromAbstractionId);
             Console.WriteLine("{0} Read value:{1} from register {2}", Index, readValue,register);
-            Message messageTOhub = new Message();
-            messageTOhub.SystemId = systemID;
-            messageTOhub.Type = Message.Types.Type.PlSend;
-            messageTOhub.PlSend = new PlSend();
-            messageTOhub.PlSend.Destination = new ProcessId();
-            messageTOhub.PlSend.Destination.Host = HubIP;
-            messageTOhub.PlSend.Destination.Port = HubPort;
-            messageTOhub.FromAbstractionId = MyID;
+            if (_ExistsHub)
+            {
+                Message messageTOhub = new Message();
+                messageTOhub.SystemId = systemID;
+                messageTOhub.Type = Message.Types.Type.PlSend;
+                messageTOhub.PlSend = new PlSend();
+                messageTOhub.PlSend.Destination = new ProcessId();
+                messageTOhub.PlSend.Destination.Host = HubIP;
+                messageTOhub.PlSend.Destination.Port = HubPort;
+                messageTOhub.FromAbstractionId = MyID;
 
 
-            Message appReadReturn = new Message();
-            appReadReturn.FromAbstractionId = MyID;
-            appReadReturn.ToAbstractionId = "hub";
-            appReadReturn.Type = Message.Types.Type.AppReadReturn;
-            appReadReturn.AppReadReturn = new AppReadReturn();
-            appReadReturn.AppReadReturn.Register = register;
-            appReadReturn.AppReadReturn.Value = new Value();
-            appReadReturn.AppReadReturn.Value.Defined = true;
-            appReadReturn.AppReadReturn.Value.V = readValue;
+                Message appReadReturn = new Message();
+                appReadReturn.FromAbstractionId = MyID;
+                appReadReturn.ToAbstractionId = "hub";
+                appReadReturn.Type = Message.Types.Type.AppReadReturn;
+                appReadReturn.AppReadReturn = new AppReadReturn();
+                appReadReturn.AppReadReturn.Register = register;
+                appReadReturn.AppReadReturn.Value = new Value();
+                appReadReturn.AppReadReturn.Value.Defined = true;
+                appReadReturn.AppReadReturn.Value.V = readValue;
 
 
-            messageTOhub.PlSend.Message = appReadReturn;
+                messageTOhub.PlSend.Message = appReadReturn;
 
-            MessageEventArgs eventArgs = new MessageEventArgs();
-            eventArgs.Message = messageTOhub;
+                MessageEventArgs eventArgs = new MessageEventArgs();
+                eventArgs.Message = messageTOhub;
 
-            CommunicationSystem system = _Systems[systemID];
-            system.Send("app.pl", eventArgs);
+                CommunicationSystem system = _Systems[systemID];
+                system.Send("app.pl", eventArgs);
+            }
         }
         private void ProcessAppRead(Message m)
         {
@@ -395,33 +408,36 @@ namespace DistributedSystem
             int value = m.UcDecide.Value.V;
 
             Console.WriteLine("{0} Decided: {1}", Index, value);
-            Message messageTOhub = new Message();
-            messageTOhub.SystemId = systemID;
-            messageTOhub.Type = Message.Types.Type.PlSend;
-            messageTOhub.PlSend = new PlSend();
-            messageTOhub.PlSend.Destination = new ProcessId();
-            messageTOhub.PlSend.Destination.Host = HubIP;
-            messageTOhub.PlSend.Destination.Port = HubPort;
-            messageTOhub.FromAbstractionId = MyID;
+            if (_ExistsHub)
+            {
+                Message messageTOhub = new Message();
+                messageTOhub.SystemId = systemID;
+                messageTOhub.Type = Message.Types.Type.PlSend;
+                messageTOhub.PlSend = new PlSend();
+                messageTOhub.PlSend.Destination = new ProcessId();
+                messageTOhub.PlSend.Destination.Host = HubIP;
+                messageTOhub.PlSend.Destination.Port = HubPort;
+                messageTOhub.FromAbstractionId = MyID;
 
 
-            Message appDecide = new Message();
-           appDecide.FromAbstractionId = MyID;
-           appDecide.ToAbstractionId = "hub";
-           appDecide.Type = Message.Types.Type.AppDecide;
-           appDecide.AppDecide = new AppDecide();
-           appDecide.AppDecide.Value = new Value();
-           appDecide.AppDecide.Value.Defined = true;
-            appDecide.AppDecide.Value.V = value;
+                Message appDecide = new Message();
+                appDecide.FromAbstractionId = MyID;
+                appDecide.ToAbstractionId = "hub";
+                appDecide.Type = Message.Types.Type.AppDecide;
+                appDecide.AppDecide = new AppDecide();
+                appDecide.AppDecide.Value = new Value();
+                appDecide.AppDecide.Value.Defined = true;
+                appDecide.AppDecide.Value.V = value;
 
 
-            messageTOhub.PlSend.Message = appDecide;
+                messageTOhub.PlSend.Message = appDecide;
 
-            MessageEventArgs eventArgs = new MessageEventArgs();
-            eventArgs.Message = messageTOhub;
+                MessageEventArgs eventArgs = new MessageEventArgs();
+                eventArgs.Message = messageTOhub;
 
-            CommunicationSystem system = _Systems[systemID];
-            system.Send("app.pl", eventArgs);
+                CommunicationSystem system = _Systems[systemID];
+                system.Send("app.pl", eventArgs);
+            }
         }
         private Dictionary<string,CommunicationSystem> _Systems;
         public Queue<Message> EventQueue;
@@ -431,6 +447,8 @@ namespace DistributedSystem
 
         public string HubIP;
         public int HubPort;
+        private bool _ExistsHub;
+
         public int ListeningPort;
         public int Index;
         public string Owner;

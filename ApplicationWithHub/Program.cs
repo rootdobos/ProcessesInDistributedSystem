@@ -7,7 +7,7 @@ using System.Threading;
 using DistributedSystem;
 using Google.Protobuf.Communication;
 using Google.Protobuf;
-namespace Application
+namespace ApplicationWithHub
 {
     class Program
     {
@@ -23,21 +23,6 @@ namespace Application
             Init(input);
             Console.ReadLine();
 
-           
-            //while(true)
-            //{
-            //    if(_EventQueue.Count>0)
-            //    {
-            //        Message m = null;
-            //        // Console.WriteLine("Event queue size: {0}", eventQueueSize);
-            //        lock (_Locker)
-            //        {
-            //            m = _EventQueue.Dequeue();
-            //        }
-            //        ProcessMessage(m);
-            //    }
-            //    Thread.Sleep(10);
-            //}
         }
         private static void Init(string input)
         {
